@@ -23,51 +23,29 @@ export default function Signup() {
     setStatus('checking');
 
     try {
-      // Safely extract ONLY the root protocol and domain name (e.g., https://xyz.supabase.co)
-      const rawUrl = import.meta.env.VITE_SUPABASE_URL || '';
-      const urlObject = new URL(rawUrl.includes('://') ? rawUrl : `https://${rawUrl}`);
-      const cleanBaseUrl = urlObject.origin; 
-      
-      const functionUrl = `${cleanBaseUrl}/functions/v1/validate-signup`;
+      // Step 1: pre-check the domain via our edge function for a friendly
+      // error message before we send any OTP email.
+      const { data: validation, error: fnError } = await supabase.functions.invoke(
+        'validate-signup',
+        { body: { email: trimmedEmail } },
+      );
 
-      let validation = null;
-      try {
-        const response = await fetch(functionUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY || '',
-          },
-          body: JSON.stringify({ email: trimmedEmail }),
-        });
-        validation = await response.json();
-      } catch (fetchErr) {
-        console.warn('Direct fetch failed, falling back to invoke:', fetchErr);
-        const { data } = await supabase.functions.invoke('validate-signup', {
-          body: { email: trimmedEmail },
-        });
-        validation = data;
+      if (fnError) {
+        setStatus('error');
+        setErrorMsg('Could not verify your email right now. Please try again in a moment.');
+        return;
       }
 
-      if (!validation || validation.error) {
+      if (!validation?.allowed) {
         setStatus('error');
         setErrorMsg(
           validation?.error ||
-            'This email is not a recognized school email. Please ensure your department domain is correct.'
+            'This email is not a recognized NUST email (e.g. @seecs.edu.pk, @student.nust.edu.pk).',
         );
         return;
       }
 
-      if (validation.allowed === false) {
-        setStatus('error');
-        setErrorMsg(
-          validation.error ||
-            'This email is not authorized. Please try using your campus address format.'
-        );
-        return;
-      }
-
-      // Step 2: domain is verified - call authentication OTP sequence
+      // Step 2: domain is good — trigger Supabase's OTP email.
       setStatus('sending');
       const { error: otpError } = await supabase.auth.signInWithOtp({
         email: trimmedEmail,
@@ -76,10 +54,13 @@ export default function Signup() {
 
       if (otpError) {
         setStatus('error');
+        // The database trigger is a second line of defense — if it fires,
+        // surface its message too rather than a generic failure.
         setErrorMsg(otpError.message || 'Could not send verification code. Please try again.');
         return;
       }
 
+      // Hand off to the OTP verification page with the email in state.
       navigate('/verify-otp', { state: { email: trimmedEmail, schoolName: validation.schoolName } });
     } catch (err) {
       console.error(err);
@@ -98,7 +79,7 @@ export default function Signup() {
           <div className="text-center mb-8">
             <h1 className="font-display text-3xl font-semibold mb-2">Sign up</h1>
             <p className="text-sm text-[var(--text-secondary)]">
-              Only verified campus department emails can join — dayscholars and
+              Only verified NUST (H-12 Islamabad) emails can join — dayscholars and
               hostellites both welcome.
             </p>
           </div>
@@ -141,8 +122,8 @@ export default function Signup() {
             </button>
 
             <p className="mt-4 text-xs text-[var(--text-muted)] text-center">
-              Accepted domains include seecs, smme, scme, scee, nbs, sada, s3h, sns,
-              asab, sines, nshs, nls, nipcons, and uspcase.
+              SEECS students use @seecs.edu.pk. All other schools use
+              @student.nust.edu.pk.
             </p>
           </form>
 

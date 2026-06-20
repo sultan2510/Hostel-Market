@@ -75,7 +75,7 @@ Deno.serve(async (req: Request) => {
         JSON.stringify({
           allowed: false,
           error:
-            'This email domain is not recognized as a NUST H-12 school email. Please sign up with your official school email (e.g. @seecs.nust.edu.pk).',
+            'This email domain is not recognized as a NUST email. Please sign up with your official school email (e.g. @seecs.edu.pk or @student.nust.edu.pk).',
         }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
       );

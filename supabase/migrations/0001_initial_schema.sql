@@ -15,7 +15,16 @@ create table if not exists public.allowed_domains (
   created_at timestamptz not null default now()
 );
 
+-- IMPORTANT: NUST schools do NOT all follow one consistent pattern.
+-- SEECS is the one confirmed exception: @seecs.edu.pk (no "nust" in it).
+-- Other schools use the shared @student.nust.edu.pk domain rather than
+-- their own subdomain. Both patterns are seeded below as confirmed; the
+-- per-school ".nust.edu.pk" subdomains are kept too since some schools
+-- may issue mail under their own subdomain in addition to the shared one.
+-- VERIFY against real student emails before going live — see README.
 insert into public.allowed_domains (domain, school_name) values
+  ('seecs.edu.pk', 'School of Electrical Engineering & Computer Science'),
+  ('student.nust.edu.pk', 'NUST (shared student domain, all schools)'),
   ('seecs.nust.edu.pk', 'School of Electrical Engineering & Computer Science'),
   ('smme.nust.edu.pk', 'School of Mechanical & Manufacturing Engineering'),
   ('scme.nust.edu.pk', 'School of Chemical & Materials Engineering'),

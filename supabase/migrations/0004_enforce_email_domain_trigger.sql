@@ -27,7 +27,7 @@ begin
   ) into v_is_allowed;
 
   if not v_is_allowed then
-    raise exception 'Signup rejected: % is not a recognized NUST H-12 school email domain', v_domain;
+    raise exception 'Signup rejected: % is not a recognized NUST school email domain', v_domain;
   end if;
 
   return new;
