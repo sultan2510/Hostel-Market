@@ -23,9 +23,12 @@ export default function Signup() {
     setStatus('checking');
 
     try {
-      // Form the clean, raw URL path to ensure the local client doesn't append /rest/v1
-      const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL || '').replace(/\/$/, '');
-      const functionUrl = `${supabaseUrl}/functions/v1/validate-signup`;
+      // Safely extract ONLY the root protocol and domain name (e.g., https://xyz.supabase.co)
+      const rawUrl = import.meta.env.VITE_SUPABASE_URL || '';
+      const urlObject = new URL(rawUrl.includes('://') ? rawUrl : `https://${rawUrl}`);
+      const cleanBaseUrl = urlObject.origin; 
+      
+      const functionUrl = `${cleanBaseUrl}/functions/v1/validate-signup`;
 
       let validation = null;
       try {
