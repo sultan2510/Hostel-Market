@@ -53,7 +53,7 @@ export default function Signup() {
         setStatus('error');
         setErrorMsg(
           validation?.error ||
-            'This email is not a recognized NUST H-12 school email (e.g. @seecs.nust.edu.pk, @smme.nust.edu.pk).'
+            'This email is not a recognized school email. Please ensure your department domain is correct.'
         );
         return;
       }
@@ -62,7 +62,7 @@ export default function Signup() {
         setStatus('error');
         setErrorMsg(
           validation.error ||
-            'This email is not a recognized NUST H-12 school email (e.g. @seecs.nust.edu.pk).'
+            'This email is not authorized. Please try using your campus address format.'
         );
         return;
       }
@@ -98,7 +98,7 @@ export default function Signup() {
           <div className="text-center mb-8">
             <h1 className="font-display text-3xl font-semibold mb-2">Sign up</h1>
             <p className="text-sm text-[var(--text-secondary)]">
-              Only verified NUST (H-12 Islamabad) emails can join — dayscholars and
+              Only verified campus department emails can join — dayscholars and
               hostellites both welcome.
             </p>
           </div>
@@ -115,7 +115,7 @@ export default function Signup() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="yourname@seecs.nust.edu.pk"
+              placeholder="yourname@seecs.edu.pk"
               autoComplete="email"
               className="w-full px-4 py-3 rounded-[var(--radius-sm)] bg-[var(--bg-base)] border border-[var(--border-strong)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] outline-none transition-colors"
               disabled={isBusy}
@@ -142,7 +142,7 @@ export default function Signup() {
 
             <p className="mt-4 text-xs text-[var(--text-muted)] text-center">
               Accepted domains include seecs, smme, scme, scee, nbs, sada, s3h, sns,
-              asab, sines, nshs, nls, nipcons, and uspcase — all under nust.edu.pk.
+              asab, sines, nshs, nls, nipcons, and uspcase.
             </p>
           </form>
 
