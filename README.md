@@ -9,7 +9,7 @@ directly and arrange payment/handoff themselves.
 ## Tech stack
 
 - **Frontend:** React + Vite + Tailwind CSS, deployed on Vercel
-- **Backend/Auth/DB:** Supabase (Postgres, Auth with email OTP, Storage, Edge Functions)
+- **Backend/Auth/DB:** Supabase (Postgres, Auth with email magic links, Storage, Edge Functions)
 - **No payment processing in-app** — contact info (phone + address) is revealed to buyers on request; the transaction itself happens off-platform
 
 ---
@@ -21,7 +21,7 @@ directly and arrange payment/handoff themselves.
 ├── src/
 │   ├── pages/
 │   │   ├── public/        → Landing, About, Mission, How It Works, FAQ
-│   │   ├── auth/          → Signup, Login, VerifyOTP, CompleteProfile
+│   │   ├── auth/          → Signup, Login, AuthCallback, CompleteProfile
 │   │   └── app/            → Home (browse), ListingDetail, CreateListing, Profile
 │   ├── components/
 │   │   ├── public/        → PublicNavbar, PublicFooter
@@ -83,13 +83,20 @@ integration flow:
    supabase functions deploy validate-signup
    ```
 7. In the Supabase dashboard, go to **Authentication → Providers → Email**
-   and make sure "Enable Email OTP" / magic-link sign-in is turned on, with
-   email confirmations required. (Supabase's free tier sends OTP emails via
-   its own shared service — for production scale with 1000s of users,
-   configure a custom SMTP provider under **Authentication → Settings → SMTP
-   Settings** so deliverability and rate limits aren't capped by the shared
-   default sender.)
-8. **Double-check the allowed domains table** matches your actual school
+   and make sure email sign-in is turned on, with email confirmations
+   required. By default this sends a clickable magic sign-in link — Supabase's
+   built-in email sender does not allow editing that template to show a typed
+   code instead unless you configure custom SMTP. (Supabase's free tier sends
+   these emails via its own shared service — for production scale with
+   1000s of users, configure a custom SMTP provider under **Authentication →
+   Settings → SMTP Settings** so deliverability and rate limits aren't
+   capped by the shared default sender.)
+8. **Set the Site URL** under **Authentication → URL Configuration** to your
+   actual deployed Vercel URL (e.g. `https://your-app.vercel.app`), and add
+   the same URL under **Redirect URLs**. This is what the magic link in the
+   email points to — if left as `localhost`, the link will fail for anyone
+   opening it outside your own dev machine.
+9. **Double-check the allowed domains table** matches your actual school
    list. Run this in the SQL editor any time you need to add/remove a domain:
    ```sql
    insert into public.allowed_domains (domain, school_name)
@@ -164,7 +171,7 @@ build does concretely:
 
 - **Email-domain gating happens twice, independently:**
   1. The `validate-signup` Edge Function checks the domain before sending any
-     OTP, so users get a clear error message.
+     sign-in link, so users get a clear error message.
   2. A Postgres trigger (`enforce_allowed_email_domain`, migration `0004`)
      rejects the signup at the database level even if someone bypasses the
      Edge Function and calls Supabase Auth directly from devtools. This is
@@ -190,10 +197,10 @@ build does concretely:
 What this does **not** cover, and what you should still do before/while
 scaling to real users:
 - Set up Supabase's **rate limiting** on auth endpoints (Dashboard →
-  Authentication → Rate Limits) to slow down OTP-spam/brute-force attempts.
-- Configure custom SMTP for OTP emails once you're past Supabase's free-tier
-  email volume (relevant once you have hundreds of signups in a short window,
-  e.g. when freshers arrive).
+  Authentication → Rate Limits) to slow down link-spam/brute-force attempts.
+- Configure custom SMTP for sign-in emails once you're past Supabase's
+  free-tier email volume (relevant once you have hundreds of signups in a
+  short window, e.g. when freshers arrive).
 - Add a moderation routine for the `reports` table (currently just collects
   reports — review and acting on them is a manual/human step).
 - Consider periodic backups (Supabase Pro tier includes automated backups;

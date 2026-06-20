@@ -10,7 +10,7 @@ import FAQ from './pages/public/FAQ';
 
 import Signup from './pages/auth/Signup';
 import Login from './pages/auth/Login';
-import VerifyOTP from './pages/auth/VerifyOTP';
+import AuthCallback from './pages/auth/AuthCallback';
 import CompleteProfile from './pages/auth/CompleteProfile';
 
 import Home from './pages/app/Home';
@@ -33,7 +33,7 @@ export default function App() {
           {/* Auth flow */}
           <Route path="/signup" element={<Signup />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/verify-otp" element={<VerifyOTP />} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
           <Route path="/complete-profile" element={<CompleteProfile />} />
 
           {/* Protected marketplace app */}
