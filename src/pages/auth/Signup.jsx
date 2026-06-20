@@ -23,29 +23,48 @@ export default function Signup() {
     setStatus('checking');
 
     try {
-      // Step 1: pre-check the domain via our edge function for a friendly
-      // error message before we send any OTP email.
-      const { data: validation, error: fnError } = await supabase.functions.invoke(
-        'validate-signup',
-        { body: { email: trimmedEmail } },
-      );
+      // Form the clean, raw URL path to ensure the local client doesn't append /rest/v1
+      const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL || '').replace(/\/$/, '');
+      const functionUrl = `${supabaseUrl}/functions/v1/validate-signup`;
 
-      if (fnError) {
-        setStatus('error');
-        setErrorMsg('Could not verify your email right now. Please try again in a moment.');
-        return;
+      let validation = null;
+      try {
+        const response = await fetch(functionUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY || '',
+          },
+          body: JSON.stringify({ email: trimmedEmail }),
+        });
+        validation = await response.json();
+      } catch (fetchErr) {
+        console.warn('Direct fetch failed, falling back to invoke:', fetchErr);
+        const { data } = await supabase.functions.invoke('validate-signup', {
+          body: { email: trimmedEmail },
+        });
+        validation = data;
       }
 
-      if (!validation?.allowed) {
+      if (!validation || validation.error) {
         setStatus('error');
         setErrorMsg(
           validation?.error ||
-            'This email is not a recognized NUST H-12 school email (e.g. @seecs.nust.edu.pk, @smme.nust.edu.pk).',
+            'This email is not a recognized NUST H-12 school email (e.g. @seecs.nust.edu.pk, @smme.nust.edu.pk).'
         );
         return;
       }
 
-      // Step 2: domain is good — trigger Supabase's OTP email.
+      if (validation.allowed === false) {
+        setStatus('error');
+        setErrorMsg(
+          validation.error ||
+            'This email is not a recognized NUST H-12 school email (e.g. @seecs.nust.edu.pk).'
+        );
+        return;
+      }
+
+      // Step 2: domain is verified - call authentication OTP sequence
       setStatus('sending');
       const { error: otpError } = await supabase.auth.signInWithOtp({
         email: trimmedEmail,
@@ -54,13 +73,10 @@ export default function Signup() {
 
       if (otpError) {
         setStatus('error');
-        // The database trigger is a second line of defense — if it fires,
-        // surface its message too rather than a generic failure.
         setErrorMsg(otpError.message || 'Could not send verification code. Please try again.');
         return;
       }
 
-      // Hand off to the OTP verification page with the email in state.
       navigate('/verify-otp', { state: { email: trimmedEmail, schoolName: validation.schoolName } });
     } catch (err) {
       console.error(err);
