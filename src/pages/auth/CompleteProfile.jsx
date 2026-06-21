@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabaseClient';
 import { useAuth } from '../../context/AuthContext';
+import { isValidPakistaniPhone, PHONE_VALIDATION_ERROR } from '../../lib/validators';
 
 export default function CompleteProfile() {
   const { user, refreshProfile } = useAuth();
@@ -22,10 +23,10 @@ export default function CompleteProfile() {
       return;
     }
 
-    // Basic Pakistani mobile number sanity check (03XXXXXXXXX or +923XXXXXXXXX).
-    const phonePattern = /^(\+92|0)3\d{9}$/;
-    if (!phonePattern.test(phoneNumber.trim().replace(/[\s-]/g, ''))) {
-      setErrorMsg('Please enter a valid Pakistani mobile number (e.g. 03001234567).');
+    // Pakistani mobile number must be exactly 11 digits (03XXXXXXXXX) or
+    // the +92 international equivalent.
+    if (!isValidPakistaniPhone(phoneNumber)) {
+      setErrorMsg(PHONE_VALIDATION_ERROR);
       return;
     }
 
@@ -93,13 +94,18 @@ export default function CompleteProfile() {
             <input
               id="phoneNumber"
               type="tel"
+              inputMode="numeric"
+              maxLength={11}
               value={phoneNumber}
-              onChange={(e) => setPhoneNumber(e.target.value)}
+              onChange={(e) => setPhoneNumber(e.target.value.replace(/[^\d+]/g, ''))}
               placeholder="03001234567"
               className="w-full px-4 py-3 rounded-[var(--radius-sm)] bg-[var(--bg-base)] border border-[var(--border-strong)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] outline-none transition-colors"
               disabled={isBusy}
               required
             />
+            <p className="mt-1.5 text-xs text-[var(--text-muted)]">
+              11 digits, starting with 03 (e.g. 03001234567)
+            </p>
           </div>
 
           <div>

@@ -72,11 +72,19 @@ export default function Profile() {
     <div className="min-h-screen flex flex-col">
       <AppNavbar />
       <main className="flex-1 max-w-4xl mx-auto px-6 py-8 w-full">
-        <div className="mb-8">
-          <h1 className="font-display text-2xl font-semibold mb-1">My listings</h1>
-          <p className="text-sm text-[var(--text-secondary)]">
-            {profile?.full_name} · {profile?.email}
-          </p>
+        <div className="mb-8 flex items-start justify-between gap-4">
+          <div>
+            <h1 className="font-display text-2xl font-semibold mb-1">My listings</h1>
+            <p className="text-sm text-[var(--text-secondary)]">
+              {profile?.full_name} · {profile?.email}
+            </p>
+          </div>
+          <Link
+            to="/app/edit-profile"
+            className="text-sm px-4 py-2 rounded-[var(--radius-sm)] border border-[var(--border-strong)] hover:border-[var(--accent)] transition-colors shrink-0"
+          >
+            Edit account
+          </Link>
         </div>
 
         {actionError && (

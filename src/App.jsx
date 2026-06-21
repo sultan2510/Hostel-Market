@@ -17,6 +17,7 @@ import Home from './pages/app/Home';
 import ListingDetail from './pages/app/ListingDetail';
 import CreateListing from './pages/app/CreateListing';
 import Profile from './pages/app/Profile';
+import EditProfile from './pages/app/EditProfile';
 
 export default function App() {
   return (
@@ -66,6 +67,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <Profile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/app/edit-profile"
+            element={
+              <ProtectedRoute>
+                <EditProfile />
               </ProtectedRoute>
             }
           />
