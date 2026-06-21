@@ -14,7 +14,7 @@ const categories = [
 const steps = [
   {
     title: 'Verify with your org email',
-    body: 'Sign up using your university or hostel email. One quick OTP and you\'re confirmed as a resident — no outsiders, ever.',
+    body: 'Sign up using your university or hostel email. One quick sign-in link and you\'re confirmed as a resident — no outsiders, ever.',
   },
   {
     title: 'Browse your block',

@@ -8,8 +8,8 @@ const steps = [
     body: 'Use your official school email (e.g. @seecs.nust.edu.pk, @nbs.nust.edu.pk). Other email providers are rejected automatically.',
   },
   {
-    title: 'Verify with a one-time code',
-    body: "We'll email you a 6-digit code. Enter it to confirm the account is really yours.",
+    title: 'Verify with a sign-in link',
+    body: "We'll email you a secure sign-in link. Click it on the same device to confirm the account is really yours.",
   },
   {
     title: 'Complete your profile',
